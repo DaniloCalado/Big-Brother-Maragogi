@@ -38,9 +38,11 @@ export async function POST(request: Request): Promise<NextResponse> {
       request,
       token: blobToken,
       onBeforeGenerateToken: async (pathname) => {
+        const safePathname = pathname.replace(/[^a-zA-Z0-9._-]/g, "_");
         return {
           allowedContentTypes: ["video/*", "image/*"],
-          pathname,
+          addRandomSuffix: true,
+          pathname: `inscricoes/${safePathname}`,
         };
       },
       onUploadCompleted: async () => {},

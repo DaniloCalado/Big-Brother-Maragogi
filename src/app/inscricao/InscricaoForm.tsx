@@ -313,7 +313,9 @@ export function InscricaoForm({
       </div>
 
       <label className="flex flex-col gap-2">
-        <span className="text-sm font-semibold text-white">Descrição</span>
+        <span className="text-sm font-semibold text-white">
+          Por que você deveria participar do BBM?
+        </span>
         <textarea
           value={descricao}
           onChange={(e) => setDescricao(e.target.value)}
@@ -393,7 +395,7 @@ export function InscricaoForm({
         <button
           type="submit"
           disabled={isSubmitting}
-          className="inline-flex h-12 items-center justify-center rounded-full bg-white px-7 text-sm font-semibold text-black transition hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-60"
+          className="inline-flex h-12 cursor-pointer items-center justify-center rounded-full bg-white px-7 text-sm font-semibold text-black transition hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isSubmitting ? "Enviando..." : "Enviar inscrição"}
         </button>

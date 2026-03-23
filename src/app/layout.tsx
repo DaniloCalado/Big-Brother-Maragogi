@@ -12,10 +12,40 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL ??
+  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null);
+
+const metadataBase = siteUrl
+  ? new URL(siteUrl)
+  : new URL("http://localhost:3000");
+
 export const metadata: Metadata = {
+  metadataBase,
   title: "Big Brother Maragogi",
   description:
     "Big Brother Maragogi: experiência na Semana Santa (2 a 5 de abril) em uma casa de praia em Maragogi - AL. Inscreva-se.",
+  openGraph: {
+    title: "Big Brother Maragogi",
+    description:
+      "Big Brother Maragogi: experiência na Semana Santa (2 a 5 de abril) em uma casa de praia em Maragogi - AL. Inscreva-se.",
+    url: "/",
+    siteName: "Big Brother Maragogi",
+    locale: "pt_BR",
+    type: "website",
+    images: [{ url: "/opengraph-image" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Big Brother Maragogi",
+    description:
+      "Big Brother Maragogi: experiência na Semana Santa (2 a 5 de abril) em uma casa de praia em Maragogi - AL. Inscreva-se.",
+    images: ["/opengraph-image"],
+  },
+  icons: {
+    icon: [{ url: "/icon", type: "image/png" }],
+    apple: [{ url: "/icon", type: "image/png" }],
+  },
 };
 
 export default function RootLayout({
