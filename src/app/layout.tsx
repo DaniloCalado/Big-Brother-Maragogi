@@ -33,18 +33,18 @@ export const metadata: Metadata = {
     siteName: "Big Brother Maragogi",
     locale: "pt_BR",
     type: "website",
-    images: [{ url: "/opengraph-image" }],
+    images: [{ url: "/opengraph-image.png", width: 1200, height: 630 }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Big Brother Maragogi",
     description:
       "Big Brother Maragogi: experiência na Semana Santa (2 a 5 de abril) em uma casa de praia em Maragogi - AL. Inscreva-se.",
-    images: ["/opengraph-image"],
+    images: ["/opengraph-image.png"],
   },
   icons: {
-    icon: [{ url: "/icon", type: "image/png" }],
-    apple: [{ url: "/icon", type: "image/png" }],
+    icon: [{ url: "/icon.png", type: "image/png" }],
+    apple: [{ url: "/icon.png", type: "image/png" }],
   },
 };
 
