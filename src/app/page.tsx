@@ -8,9 +8,9 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { useEffect, useRef, useState } from "react";
 
 const localSlides = [
-  { src: "/casa-1.png", alt: "Casa — foto 1" },
-  { src: "/casa-2.png", alt: "Casa — foto 2" },
-  { src: "/casa-3.png", alt: "Casa — foto 3" },
+  { src: "/casa-1.jpeg", alt: "Casa — foto 1" },
+  { src: "/casa-2.jpeg", alt: "Casa — foto 2" },
+  { src: "/casa-3.jpeg", alt: "Casa — foto 3" },
 ] as const;
 
 const galleryImages = [
@@ -48,6 +48,20 @@ export default function Home() {
     startScrollLeft: number;
   }>({ active: false, startX: 0, startScrollLeft: 0 });
   const [isLocalHovered, setIsLocalHovered] = useState(false);
+  const [nowDate, setNowDate] = useState(() => new Date());
+  const eventStart = new Date(2026, 3, 2);
+  const msLeft =
+    new Date(
+      eventStart.getFullYear(),
+      eventStart.getMonth(),
+      eventStart.getDate(),
+    ).getTime() -
+    new Date(
+      nowDate.getFullYear(),
+      nowDate.getMonth(),
+      nowDate.getDate(),
+    ).getTime();
+  const daysLeft = Math.max(0, Math.ceil(msLeft / 86400000));
 
   const galleryCarouselRef = useRef<HTMLDivElement | null>(null);
   const galleryDragRef = useRef<{
@@ -72,6 +86,13 @@ export default function Home() {
     return () => window.clearInterval(interval);
   }, [isLocalHovered]);
 
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      setNowDate(new Date());
+    }, 60000);
+    return () => window.clearInterval(interval);
+  }, []);
+
   return (
     <div className="flex min-h-full flex-col text-white">
       <SiteHeader />
@@ -90,7 +111,7 @@ export default function Home() {
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_0%,rgba(251,191,36,0.35),transparent_52%),radial-gradient(circle_at_72%_14%,rgba(249,115,22,0.32),transparent_56%),radial-gradient(circle_at_70%_65%,rgba(168,85,247,0.26),transparent_60%),radial-gradient(circle_at_20%_85%,rgba(34,211,238,0.26),transparent_60%)]" />
           </div>
 
-          <div className="relative mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 sm:py-24">
+          <div className="relative mx-auto w-full max-w-6xl px-4 pb-8 pt-5 sm:px-6 sm:pb-24 sm:pt-16">
             <div className="grid gap-8 lg:grid-cols-12 lg:items-center lg:gap-12">
               <div className="lg:col-span-7">
                 <div className="mx-auto flex w-fit items-center justify-center gap-2 rounded-full border border-white/15 bg-black/40 px-4 py-2 text-center text-xs font-semibold text-white/90 sm:mx-0 sm:justify-start sm:text-left">
@@ -123,6 +144,13 @@ export default function Home() {
               </div>
 
               <div className="lg:col-span-5">
+                <p className="mb-3 text-center text-sm text-white/85">
+                  Faltam{" "}
+                  <span className="text-lg font-black text-white sm:text-xl">
+                    {daysLeft}
+                  </span>{" "}
+                  dias para o evento começar
+                </p>
                 <div className="flex flex-col items-center justify-center rounded-3xl border border-white/10 bg-black/55 p-8 text-center backdrop-blur">
                   <BBGMark
                     subtitle="Big Brother Maragogi"
@@ -140,7 +168,7 @@ export default function Home() {
               {[
                 { label: "Datas", value: "2 a 5 de abril" },
                 { label: "Cidade", value: "Maragogi • AL" },
-                { label: "Base", value: "Casa de praia" },
+                { label: "Base", value: "Casa de Praia do RT" },
               ].map((card) => (
                 <div
                   key={card.label}
@@ -178,7 +206,7 @@ export default function Home() {
                   </div>
                   <div className="flex items-start gap-3">
                     <span className="mt-1 size-2 rounded-full bg-purple-400" />
-                    <p>Formato: convivência + provas + atividades em grupo</p>
+                    <p>Formato: Convivência +Bebida + Farra + Som Alto</p>
                   </div>
                   <div className="flex items-start gap-3">
                     <span className="mt-1 size-2 rounded-full bg-emerald-400" />
@@ -189,8 +217,8 @@ export default function Home() {
 
               <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/5">
                 <Image
-                  src="https://commons.wikimedia.org/wiki/Special:FilePath/Pontal%20do%20Maragogi%20-%20panoramio.jpg"
-                  alt="Vista do litoral de Maragogi"
+                  src="/maragogi-1.jpeg"
+                  alt="Maragogi — foto 1"
                   width={1200}
                   height={800}
                   className="h-auto w-full object-cover"
@@ -244,7 +272,7 @@ export default function Home() {
                   },
                   {
                     title: "Prova do Líder",
-                    desc: "O líder do dia será quem beber mais na dinâmica de bebidas (com regras de segurança e consumo responsável).",
+                    desc: "O líder do dia será quem beber mais na dinâmica de bebidas (com regras de segurança e consumo irresponsável).",
                     icon: (
                       <svg
                         aria-hidden="true"
