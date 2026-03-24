@@ -2,6 +2,7 @@ import { Resend } from "resend";
 import { NextResponse } from "next/server";
 import { sql } from "@vercel/postgres";
 import { randomUUID } from "crypto";
+import { revalidatePath } from "next/cache";
 
 export const runtime = "nodejs";
 
@@ -108,6 +109,8 @@ export async function POST(req: Request) {
         ${inscricaoId}, ${nome}, ${idade}, ${telefone}, ${email}, ${descricao}, ${fotoUrl}, ${videoUrl}, 'pending'
       );
     `;
+    revalidatePath("/admin/inscricoes");
+    revalidatePath("/participantes");
 
     const resendKey = process.env.RESEND_API_KEY ?? "";
     const from =

@@ -3,6 +3,8 @@ import { revalidatePath } from "next/cache";
 import Image from "next/image";
 import Link from "next/link";
 
+export const dynamic = "force-dynamic";
+
 type Inscricao = {
   id: string;
   created_at: string;
