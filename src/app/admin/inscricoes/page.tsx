@@ -1,5 +1,5 @@
 import { sql } from "@vercel/postgres";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, unstable_noStore as noStore } from "next/cache";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -100,6 +100,7 @@ async function deleteInscricao(formData: FormData) {
 }
 
 export default async function AdminInscricoesPage() {
+  noStore();
   let inscricoes: Inscricao[] = [];
   let counts: StatusCount[] = [];
   let dbError: string | null = null;

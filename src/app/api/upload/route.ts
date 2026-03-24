@@ -40,7 +40,7 @@ export async function POST(request: Request): Promise<NextResponse> {
       onBeforeGenerateToken: async (pathname) => {
         const safePathname = pathname.replace(/[^a-zA-Z0-9._-]/g, "_");
         return {
-          allowedContentTypes: ["video/*", "image/*"],
+          allowedContentTypes: ["video/*", "image/*", "audio/*"],
           addRandomSuffix: true,
           pathname: `inscricoes/${safePathname}`,
         };

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { sql } from "@vercel/postgres";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 type Participante = {
   id: string;
@@ -21,12 +22,24 @@ export async function GET() {
       LIMIT 30;
     `;
 
-    return NextResponse.json({ ok: true, participantes: result.rows });
+    return NextResponse.json(
+      { ok: true, participantes: result.rows },
+      {
+        headers: {
+          "Cache-Control": "no-store, max-age=0",
+        },
+      },
+    );
   } catch (err) {
     const message = err instanceof Error ? err.message : "Erro desconhecido";
     return NextResponse.json(
       { ok: false, error: message, participantes: [] as Participante[] },
-      { status: 200 },
+      {
+        status: 200,
+        headers: {
+          "Cache-Control": "no-store, max-age=0",
+        },
+      },
     );
   }
 }

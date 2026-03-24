@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { BackgroundAudio } from "@/components/BackgroundAudio";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -84,6 +85,12 @@ export default function RootLayout({
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_10%,rgba(249,115,22,0.28),transparent_48%),radial-gradient(circle_at_78%_18%,rgba(236,72,153,0.25),transparent_52%),radial-gradient(circle_at_70%_78%,rgba(34,211,238,0.22),transparent_55%)]" />
         </div>
         {children}
+        <BackgroundAudio
+          src={
+            process.env.NEXT_PUBLIC_MUSIC_URL ??
+            "/abertura%20do%20Big%20Brother%20Brasil.mp3"
+          }
+        />
       </body>
     </html>
   );
