@@ -8,56 +8,22 @@ export function BBGMark({
   className,
 }: BBGMarkProps) {
   return (
-    <div
-      className={`flex flex-col items-center text-center ${className ?? ""}`}
-    >
+    <div className={`flex flex-col items-center text-center ${className ?? ""}`}>
       <div className="relative size-28 sm:size-32">
-        <svg
-          viewBox="0 0 120 120"
-          className="absolute inset-0 h-full w-full"
-          aria-hidden="true"
-        >
-          <defs>
-            <linearGradient id="bbgRing" x1="0" x2="1" y1="0" y2="1">
-              <stop offset="0" stopColor="#fbbf24" />
-              <stop offset="0.45" stopColor="#f97316" />
-              <stop offset="0.75" stopColor="#a855f7" />
-              <stop offset="1" stopColor="#22d3ee" />
-            </linearGradient>
-            <radialGradient id="bbgCore" cx="50%" cy="45%" r="60%">
-              <stop offset="0" stopColor="#0b0b0b" />
-              <stop offset="1" stopColor="#000000" />
-            </radialGradient>
-          </defs>
-          <circle
-            cx="60"
-            cy="60"
-            r="54"
-            fill="none"
-            stroke="url(#bbgRing)"
-            strokeWidth="10"
-          />
-          <circle cx="60" cy="60" r="40" fill="url(#bbgCore)" />
-          <circle
-            cx="60"
-            cy="60"
-            r="28"
-            fill="none"
-            stroke="rgba(255,255,255,0.18)"
-            strokeWidth="8"
-          />
-          <circle cx="72" cy="52" r="8" fill="rgba(255,255,255,0.12)" />
-        </svg>
-        <div className="relative flex h-full w-full items-center justify-center">
+        <div className="absolute inset-0 rounded-full bg-[conic-gradient(from_180deg,#fbbf24,#f97316,#a855f7,#22d3ee,#fbbf24)]" />
+        <div className="absolute inset-[12px] rounded-full bg-[radial-gradient(circle_at_35%_30%,#3a3a3a_0%,#232323_45%,#141414_100%)] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)]" />
+        <div className="absolute inset-[18px] rounded-full bg-black shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)]" />
+        <div className="absolute inset-[18px] rounded-full bg-[radial-gradient(circle_at_50%_35%,rgba(255,255,255,0.10)_0%,rgba(255,255,255,0.04)_22%,rgba(0,0,0,0.00)_58%),radial-gradient(circle_at_50%_72%,#0b0b0b_0%,#000000_70%)]" />
+        <div className="absolute inset-[30px] rounded-full border-[8px] border-white/15" />
+        <div className="absolute inset-[44px] rounded-full border border-white/10 opacity-60" />
+        <div className="relative grid h-full w-full place-items-center drop-shadow-[0_10px_30px_rgba(0,0,0,0.55)]">
           <span className="text-2xl font-black tracking-tight text-white sm:text-3xl">
             BBM
           </span>
         </div>
       </div>
-      <div className="mt-3">
-        <div className="text-sm font-semibold uppercase tracking-[0.22em] text-white/80">
-          {subtitle}
-        </div>
+      <div className="mt-3 text-sm font-semibold uppercase tracking-[0.22em] text-white/80">
+        {subtitle}
       </div>
     </div>
   );

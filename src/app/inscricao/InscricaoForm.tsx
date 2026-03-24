@@ -4,7 +4,8 @@ import { upload } from "@vercel/blob/client";
 import { useEffect, useMemo, useState } from "react";
 
 type ApiOk = { ok: true; message: string };
-type ApiErr = { ok: false; error: string };
+type ApiErr = { ok: false; error: string; details?: string };
+type ApiOkWithEmail = ApiOk & { emailError?: string };
 
 function isApiOk(data: unknown): data is ApiOk {
   return (
@@ -222,7 +223,7 @@ export function InscricaoForm({
       const data: unknown = await res.json().catch(() => null);
 
       if (isApiOk(data)) {
-        setResult(data);
+        setResult(data as ApiOkWithEmail);
         setNome("");
         setIdade("");
         setTelefone("");
@@ -415,13 +416,23 @@ export function InscricaoForm({
 
         {result?.ok === true ? (
           <div className="rounded-2xl border border-emerald-400/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
-            {result.message}
+            <p>{result.message}</p>
+            {"emailError" in result && typeof result.emailError === "string" ? (
+              <p className="mt-2 text-xs text-emerald-200/80">
+                {result.emailError}
+              </p>
+            ) : null}
           </div>
         ) : null}
 
         {result?.ok === false ? (
           <div className="rounded-2xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
-            {result.error}
+            <p>{result.error}</p>
+            {"details" in result && typeof result.details === "string" ? (
+              <p className="mt-2 break-words text-xs text-red-200/80">
+                {result.details}
+              </p>
+            ) : null}
           </div>
         ) : null}
       </div>

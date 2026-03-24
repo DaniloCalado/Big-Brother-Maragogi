@@ -1,5 +1,7 @@
 import { Resend } from "resend";
 import { NextResponse } from "next/server";
+import { sql } from "@vercel/postgres";
+import { randomUUID } from "crypto";
 
 export const runtime = "nodejs";
 
@@ -74,19 +76,40 @@ export async function POST(req: Request) {
         { status: 400 },
       );
     }
-    const resendKey = process.env.RESEND_API_KEY;
-    if (!resendKey) {
-      return NextResponse.json(
-        {
-          ok: false,
-          error:
-            "Envio de e-mail não configurado (faltando RESEND_API_KEY no ambiente).",
-        },
-        { status: 500 },
-      );
-    }
 
-    const resend = new Resend(resendKey);
+    await sql`
+      CREATE TABLE IF NOT EXISTS inscricoes (
+        id uuid PRIMARY KEY,
+        created_at timestamptz NOT NULL DEFAULT now(),
+        updated_at timestamptz NOT NULL DEFAULT now(),
+        nome text NOT NULL,
+        idade int NOT NULL,
+        telefone text NOT NULL,
+        email text NOT NULL,
+        descricao text,
+        foto_url text NOT NULL,
+        video_url text,
+        status text NOT NULL DEFAULT 'pending'
+      );
+    `;
+
+    await sql`ALTER TABLE inscricoes ALTER COLUMN created_at SET DEFAULT now();`;
+    await sql`ALTER TABLE inscricoes ALTER COLUMN updated_at SET DEFAULT now();`;
+
+    await sql`
+      CREATE INDEX IF NOT EXISTS idx_inscricoes_status ON inscricoes(status);
+    `;
+
+    const inscricaoId = randomUUID();
+    await sql`
+      INSERT INTO inscricoes (
+        id, nome, idade, telefone, email, descricao, foto_url, video_url, status
+      ) VALUES (
+        ${inscricaoId}, ${nome}, ${idade}, ${telefone}, ${email}, ${descricao}, ${fotoUrl}, ${videoUrl}, 'pending'
+      );
+    `;
+
+    const resendKey = process.env.RESEND_API_KEY ?? "";
     const from =
       process.env.RESEND_FROM ?? "Big Brother Maragogi <onboarding@resend.dev>";
 
@@ -95,6 +118,7 @@ export async function POST(req: Request) {
       <div style="font-family:Arial,Helvetica,sans-serif;line-height:1.5;color:#111">
         <h2 style="margin:0 0 12px">Nova inscrição — Big Brother Maragogi</h2>
         <p style="margin:0 0 16px">Semana Santa • 2 a 5 de abril • Maragogi - AL</p>
+        <p style="margin:0 0 16px"><strong>ID:</strong> ${inscricaoId}</p>
 
         <table style="border-collapse:collapse;width:100%;max-width:680px">
           <tr><td style="padding:8px 0;width:160px"><strong>Nome</strong></td><td style="padding:8px 0">${escapeHtml(
@@ -120,24 +144,48 @@ export async function POST(req: Request) {
       </div>
     `;
 
-    await resend.emails.send({
-      from,
-      to: [ADMIN_EMAIL],
-      replyTo: email,
-      subject,
-      html,
-    });
+    let emailSent = false;
+    let emailError: string | null = null;
 
-    return NextResponse.json({
+    if (!resendKey) {
+      emailError = "RESEND_API_KEY não configurado.";
+    } else {
+      try {
+        const resend = new Resend(resendKey);
+        await resend.emails.send({
+          from,
+          to: [ADMIN_EMAIL],
+          replyTo: email,
+          subject,
+          html,
+        });
+        emailSent = true;
+      } catch (err) {
+        emailError =
+          err instanceof Error ? err.message : "Falha ao enviar e-mail";
+      }
+    }
+
+    const response: Record<string, unknown> = {
       ok: true,
-      message:
-        "Inscrição enviada com sucesso! Em breve você recebe um retorno.",
-    });
-  } catch {
-    return NextResponse.json(
-      { ok: false, error: "Erro inesperado ao enviar. Tente novamente." },
-      { status: 500 },
-    );
+      message: emailSent
+        ? "Inscrição enviada com sucesso! Em breve você recebe um retorno."
+        : "Inscrição salva com sucesso! O e-mail de notificação não foi enviado.",
+    };
+
+    if (process.env.NODE_ENV !== "production" && emailError) {
+      response.emailError = emailError;
+    }
+
+    return NextResponse.json(response);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Erro desconhecido";
+    const response: Record<string, unknown> = {
+      ok: false,
+      error: "Erro inesperado ao enviar. Tente novamente.",
+    };
+    if (process.env.NODE_ENV !== "production") response.details = message;
+    return NextResponse.json(response, { status: 500 });
   }
 }
 

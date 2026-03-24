@@ -2,10 +2,17 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { BBGMark } from "@/components/BBGMark";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 import { useEffect, useRef, useState } from "react";
+
+type ConfirmedParticipant = {
+  id: string;
+  nome: string;
+  idade: number;
+  descricao: string | null;
+  foto_url: string;
+};
 
 const localSlides = [
   { src: "/casa-1.jpeg", alt: "Casa — foto 1" },
@@ -70,6 +77,17 @@ export default function Home() {
     startScrollLeft: number;
   }>({ active: false, startX: 0, startScrollLeft: 0 });
 
+  const confirmedCarouselRef = useRef<HTMLDivElement | null>(null);
+  const confirmedDragRef = useRef<{
+    active: boolean;
+    startX: number;
+    startScrollLeft: number;
+  }>({ active: false, startX: 0, startScrollLeft: 0 });
+  const [isConfirmedHovered, setIsConfirmedHovered] = useState(false);
+  const [confirmedParticipants, setConfirmedParticipants] = useState<
+    ConfirmedParticipant[]
+  >([]);
+
   useEffect(() => {
     const el = localCarouselRef.current;
     if (!el) return;
@@ -93,6 +111,76 @@ export default function Home() {
     return () => window.clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    const controller = new AbortController();
+
+    (async () => {
+      try {
+        const res = await fetch("/api/participantes", {
+          signal: controller.signal,
+        });
+        const data: unknown = await res.json().catch(() => null);
+        if (
+          typeof data === "object" &&
+          data !== null &&
+          "ok" in data &&
+          (data as { ok: unknown }).ok === true &&
+          "participantes" in data &&
+          Array.isArray((data as { participantes: unknown }).participantes)
+        ) {
+          setConfirmedParticipants(
+            (data as { participantes: ConfirmedParticipant[] }).participantes,
+          );
+        } else {
+          setConfirmedParticipants([]);
+        }
+      } catch {
+        setConfirmedParticipants([]);
+      }
+    })();
+
+    return () => controller.abort();
+  }, []);
+
+  useEffect(() => {
+    const el = confirmedCarouselRef.current;
+    if (!el) return;
+    if (isConfirmedHovered) return;
+    if (confirmedParticipants.length < 2) return;
+
+    let raf = 0;
+    let last = window.performance.now();
+
+    const tick = (t: number) => {
+      const dt = t - last;
+      last = t;
+
+      if (!confirmedDragRef.current.active) {
+        el.scrollLeft += dt * 0.04;
+        const maxLeft = el.scrollWidth - el.clientWidth;
+        if (maxLeft > 0 && el.scrollLeft >= maxLeft - 1) {
+          el.scrollLeft = 0;
+        }
+      }
+
+      raf = window.requestAnimationFrame(tick);
+    };
+
+    raf = window.requestAnimationFrame(tick);
+    return () => window.cancelAnimationFrame(raf);
+  }, [confirmedParticipants.length, isConfirmedHovered]);
+
+  const snapConfirmedCarousel = () => {
+    const el = confirmedCarouselRef.current;
+    if (!el) return;
+    const first = el.querySelector<HTMLElement>("[data-confirmed-card='true']");
+    const gap = Number.parseFloat(window.getComputedStyle(el).gap || "0");
+    const step = first ? first.offsetWidth + gap : el.clientWidth;
+    if (!step) return;
+    const index = Math.round(el.scrollLeft / step);
+    el.scrollTo({ left: index * step, behavior: "smooth" });
+  };
+
   return (
     <div className="flex min-h-full flex-col text-white">
       <SiteHeader />
@@ -104,6 +192,7 @@ export default function Home() {
               alt="Praia de Maragogi, Alagoas"
               fill
               priority
+              loading="eager"
               className="object-cover"
               sizes="100vw"
             />
@@ -152,14 +241,32 @@ export default function Home() {
                   dias para o evento começar
                 </p>
                 <div className="flex flex-col items-center justify-center rounded-3xl border border-white/10 bg-black/55 p-8 text-center backdrop-blur">
-                  <BBGMark
-                    subtitle="Big Brother Maragogi"
-                    className="mx-auto"
-                  />
-                  <p className="mt-5 text-center text-sm text-white/70">
-                    BBM • Big Brother
-                    <span className="text-white"> Maragogi</span>
-                  </p>
+                  <div className="mx-auto flex flex-col items-center text-center">
+                    <div className="relative size-28 sm:size-32">
+                      <div className="absolute inset-0 rounded-full bg-[conic-gradient(from_180deg,#fbbf24,#f97316,#a855f7,#22d3ee,#fbbf24)]" />
+                      <div className="absolute inset-[12px] rounded-full bg-[#1a1a1a] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)]" />
+                      <div className="absolute inset-[18px] rounded-full bg-black shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)]" />
+                      <div className="absolute inset-[18px] rounded-full bg-[radial-gradient(circle_at_50%_35%,rgba(255,255,255,0.10)_0%,rgba(255,255,255,0.04)_22%,rgba(0,0,0,0.00)_58%),radial-gradient(circle_at_50%_72%,#0b0b0b_0%,#000000_70%)]" />
+                      <div className="absolute inset-[30px] rounded-full border-[8px] border-white/15" />
+                      <div className="absolute inset-[44px] rounded-full border border-white/10 opacity-60" />
+                      <div className="relative grid h-full w-full place-items-center drop-shadow-[0_10px_30px_rgba(0,0,0,0.55)]">
+                        <span className="text-3xl font-black tracking-tight text-white">
+                          BBM
+                        </span>
+                      </div>
+                    </div>
+                    <div className="mt-3">
+                      <div className="text-sm font-semibold uppercase tracking-[0.22em] text-white/80">
+                        Big Brother Maragogi
+                      </div>
+                    </div>
+                  </div>
+                  <Link
+                    href="/participantes"
+                    className="mt-5 inline-flex h-10 items-center justify-center rounded-full border border-white/15 bg-black/40 px-5 text-sm font-semibold text-white/85 transition hover:bg-white/10"
+                  >
+                    Ver participantes
+                  </Link>
                 </div>
               </div>
             </div>
@@ -489,6 +596,106 @@ export default function Home() {
           </div>
         </section>
 
+        {confirmedParticipants.length > 0 ? (
+          <section className="bg-black/20 backdrop-blur-[2px]">
+            <div className="mx-auto w-full max-w-6xl px-4 pb-14 pt-8 sm:px-6 sm:py-16">
+              <div className="flex flex-col gap-3">
+                <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+                  Participantes Confirmados
+                </h2>
+                <p className="text-base text-white/75">
+                  Quem já foi selecionado para o BBM.
+                </p>
+              </div>
+
+              <div className="mt-8">
+                <div
+                  ref={confirmedCarouselRef}
+                  className="flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                  onMouseEnter={() => setIsConfirmedHovered(true)}
+                  onMouseLeave={() => setIsConfirmedHovered(false)}
+                  onPointerDown={(e) => {
+                    const el = confirmedCarouselRef.current;
+                    if (!el) return;
+                    el.setPointerCapture(e.pointerId);
+                    confirmedDragRef.current = {
+                      active: true,
+                      startX: e.clientX,
+                      startScrollLeft: el.scrollLeft,
+                    };
+                  }}
+                  onPointerMove={(e) => {
+                    const el = confirmedCarouselRef.current;
+                    if (!el) return;
+                    if (!confirmedDragRef.current.active) return;
+                    const dx = e.clientX - confirmedDragRef.current.startX;
+                    el.scrollLeft =
+                      confirmedDragRef.current.startScrollLeft - dx;
+                  }}
+                  onPointerUp={() => {
+                    confirmedDragRef.current.active = false;
+                    snapConfirmedCarousel();
+                  }}
+                  onPointerCancel={() => {
+                    confirmedDragRef.current.active = false;
+                  }}
+                  onWheel={(e) => {
+                    const el = confirmedCarouselRef.current;
+                    if (!el) return;
+                    if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
+                    e.preventDefault();
+                    el.scrollBy({ left: e.deltaY, behavior: "smooth" });
+                  }}
+                >
+                  {confirmedParticipants.map((p) => (
+                    <div
+                      key={p.id}
+                      data-confirmed-card="true"
+                      className="w-full shrink-0 snap-start rounded-3xl border border-white/10 bg-black/55 p-6 text-center backdrop-blur sm:w-[320px] sm:text-left"
+                    >
+                      <div className="flex flex-col items-center gap-3 text-center sm:flex-row sm:items-center sm:gap-4 sm:text-left">
+                        <a
+                          href={p.foto_url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="relative grid size-[72px] shrink-0 cursor-pointer place-items-center"
+                          aria-label="Abrir foto"
+                          title="Abrir foto"
+                        >
+                          <div className="absolute inset-0 rounded-full bg-[conic-gradient(from_180deg,#fbbf24,#f97316,#a855f7,#22d3ee,#fbbf24)]" />
+                          <div className="absolute inset-[7px] overflow-hidden rounded-full bg-black ring-1 ring-white/10">
+                            <Image
+                              src={p.foto_url}
+                              alt={p.nome}
+                              fill
+                              className="object-cover"
+                              sizes="72px"
+                            />
+                          </div>
+                        </a>
+                        <div className="min-w-0">
+                          <p className="w-full truncate text-base font-semibold text-white">
+                            {p.nome}
+                          </p>
+                          <p className="text-sm text-white/70">
+                            {p.idade} anos
+                          </p>
+                        </div>
+                      </div>
+
+                      {p.descricao ? (
+                        <p className="mt-4 whitespace-pre-wrap text-sm italic leading-6 text-white/80">
+                          “{p.descricao}”
+                        </p>
+                      ) : null}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </section>
+        ) : null}
+
         <section id="galeria" className="bg-black/20 backdrop-blur-[2px]">
           <div className="mx-auto w-full max-w-6xl px-4 pb-16 pt-8 sm:px-6 sm:py-20">
             <div className="flex flex-col gap-3">
@@ -553,7 +760,7 @@ export default function Home() {
                         fill
                         priority={index === 0}
                         className="object-cover"
-                        sizes="100vw"
+                        sizes="(max-width: 768px) calc(100vw - 2rem), 768px"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/0 to-black/0" />
                     </div>
