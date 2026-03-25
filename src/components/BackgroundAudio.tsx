@@ -28,6 +28,33 @@ export function BackgroundAudio({ src }: { src: string }) {
     const audio = audioRef.current;
     if (!audio) return;
 
+    const onPlay = () => setMobileControlsVisible(false);
+    const onPlaying = () => setMobileControlsVisible(false);
+    const onTime = () => {
+      if (!audio.paused && !audio.ended) setMobileControlsVisible(false);
+    };
+    const onPause = () => setMobileControlsVisible(true);
+    const onEnded = () => setMobileControlsVisible(true);
+
+    audio.addEventListener("play", onPlay);
+    audio.addEventListener("playing", onPlaying);
+    audio.addEventListener("timeupdate", onTime);
+    audio.addEventListener("pause", onPause);
+    audio.addEventListener("ended", onEnded);
+
+    return () => {
+      audio.removeEventListener("play", onPlay);
+      audio.removeEventListener("playing", onPlaying);
+      audio.removeEventListener("timeupdate", onTime);
+      audio.removeEventListener("pause", onPause);
+      audio.removeEventListener("ended", onEnded);
+    };
+  }, []);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
     const wantsEnabled = (() => {
       try {
         return localStorage.getItem(storageKey) === "1";

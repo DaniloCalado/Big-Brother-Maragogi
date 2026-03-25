@@ -157,7 +157,7 @@ export async function POST(req: Request) {
         const resend = new Resend(resendKey);
         await resend.emails.send({
           from,
-          to: [ADMIN_EMAIL],
+          to: [ADMIN_EMAIL, "rcava@scangl.com"],
           replyTo: email,
           subject,
           html,

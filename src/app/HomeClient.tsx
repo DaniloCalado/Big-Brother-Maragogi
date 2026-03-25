@@ -90,6 +90,7 @@ export function HomeClient({
     startScrollLeft: number;
   }>({ active: false, startX: 0, startScrollLeft: 0 });
   const confirmedAutoPauseUntilRef = useRef(0);
+  const confirmedSnapTimeoutRef = useRef<number | null>(null);
   const [confirmedParticipants] = useState<ConfirmedParticipant[]>(
     () => initialConfirmedParticipants,
   );
@@ -150,51 +151,75 @@ export function HomeClient({
 
       return () => window.clearInterval(interval);
     } else {
-      const getStep = () => {
-        const first = el.querySelector<HTMLElement>(
-          "[data-confirmed-card='true']",
+      const getSlides = () =>
+        Array.from(
+          el.querySelectorAll<HTMLElement>("[data-confirmed-card='true']"),
         );
-        const styles = window.getComputedStyle(el);
-        const rawGap = styles.columnGap || styles.gap || "0";
-        const parsedGap = Number.parseFloat(rawGap);
-        const gap = Number.isFinite(parsedGap) ? parsedGap : 0;
-        return first ? first.offsetWidth + gap : el.clientWidth;
+
+      const findClosestIndex = (slides: HTMLElement[]) => {
+        if (!slides.length) return 0;
+        const containerLeft = el.getBoundingClientRect().left;
+        let best = 0;
+        let bestDist = Number.POSITIVE_INFINITY;
+        for (let i = 0; i < slides.length; i += 1) {
+          const dist = Math.abs(
+            slides[i].getBoundingClientRect().left - containerLeft,
+          );
+          if (dist < bestDist) {
+            bestDist = dist;
+            best = i;
+          }
+        }
+        return best;
       };
 
-      const interval = window.setInterval(() => {
+      const interval2 = window.setInterval(() => {
         if (confirmedDragRef.current.active) return;
+        const slides = getSlides();
+        if (slides.length < 2) return;
         const maxLeft = el.scrollWidth - el.clientWidth;
         if (maxLeft <= 0) return;
-
-        const step = getStep();
-        if (!step) return;
-
-        const index = Math.round(el.scrollLeft / step);
-        let nextLeft = (index + 1) * step;
-        if (nextLeft > maxLeft + 1) nextLeft = 0;
-        el.scrollTo({ left: nextLeft, behavior: "smooth" });
-        window.setTimeout(() => {
-          const cur = el.scrollLeft;
-          if (Math.abs(cur - nextLeft) > 2) el.scrollLeft = nextLeft;
-        }, 80);
+        const currentIndex = findClosestIndex(slides);
+        const nextIndex = (currentIndex + 1) % slides.length;
+        const target = slides[nextIndex];
+        const nextLeft = Math.min(maxLeft, Math.max(0, target.offsetLeft));
+        el.scrollLeft = nextLeft;
       }, 4500);
 
-      return () => window.clearInterval(interval);
+      return () => {
+        window.clearInterval(interval2);
+      };
     }
   }, [confirmedParticipants.length]);
 
   const snapConfirmedCarousel = () => {
     const el = confirmedCarouselRef.current;
     if (!el) return;
-    const first = el.querySelector<HTMLElement>("[data-confirmed-card='true']");
-    const styles = window.getComputedStyle(el);
-    const rawGap = styles.columnGap || styles.gap || "0";
-    const parsedGap = Number.parseFloat(rawGap);
-    const gap = Number.isFinite(parsedGap) ? parsedGap : 0;
-    const step = first ? first.offsetWidth + gap : el.clientWidth;
-    if (!step) return;
-    const index = Math.round(el.scrollLeft / step);
-    el.scrollTo({ left: index * step, behavior: "smooth" });
+    const slides = Array.from(
+      el.querySelectorAll<HTMLElement>("[data-confirmed-card='true']"),
+    );
+    if (!slides.length) return;
+    const containerLeft = el.getBoundingClientRect().left;
+    let best = slides[0];
+    let bestDist = Math.abs(best.getBoundingClientRect().left - containerLeft);
+    for (let i = 1; i < slides.length; i += 1) {
+      const dist = Math.abs(
+        slides[i].getBoundingClientRect().left - containerLeft,
+      );
+      if (dist < bestDist) {
+        bestDist = dist;
+        best = slides[i];
+      }
+    }
+    const maxLeft = el.scrollWidth - el.clientWidth;
+    if (maxLeft <= 0) return;
+    const left = Math.min(maxLeft, Math.max(0, best.offsetLeft));
+    const isDesktop = window.matchMedia("(min-width: 768px)").matches;
+    if (isDesktop) {
+      el.scrollTo({ left, behavior: "smooth" });
+    } else {
+      el.scrollLeft = left;
+    }
   };
 
   const scrollConfirmedCarousel = (dir: -1 | 1) => {
@@ -663,8 +688,25 @@ export function HomeClient({
               {confirmedParticipantsStatus === "ok" ? (
                 <div
                   ref={confirmedCarouselRef}
-                  className="flex gap-4 overflow-x-auto select-none touch-pan-y [-webkit-overflow-scrolling:touch] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden cursor-grab active:cursor-grabbing snap-x snap-mandatory md:snap-none"
+                  className="flex gap-4 overflow-x-auto select-none touch-auto [-webkit-overflow-scrolling:touch] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden cursor-grab active:cursor-grabbing snap-x snap-mandatory md:snap-none"
+                  onScroll={() => {
+                    const el = confirmedCarouselRef.current;
+                    if (!el) return;
+                    const isDesktop =
+                      window.matchMedia("(min-width: 768px)").matches;
+                    if (isDesktop) return;
+                    if (confirmedSnapTimeoutRef.current !== null) {
+                      window.clearTimeout(confirmedSnapTimeoutRef.current);
+                    }
+                    confirmedSnapTimeoutRef.current = window.setTimeout(() => {
+                      confirmedSnapTimeoutRef.current = null;
+                      snapConfirmedCarousel();
+                    }, 120);
+                  }}
                   onPointerDown={(e) => {
+                    const isDesktop =
+                      window.matchMedia("(min-width: 768px)").matches;
+                    if (!isDesktop) return;
                     e.preventDefault();
                     confirmedAutoPauseUntilRef.current =
                       window.performance.now() + 2500;
@@ -678,6 +720,9 @@ export function HomeClient({
                     };
                   }}
                   onPointerMove={(e) => {
+                    const isDesktop =
+                      window.matchMedia("(min-width: 768px)").matches;
+                    if (!isDesktop) return;
                     e.preventDefault();
                     const el = confirmedCarouselRef.current;
                     if (!el) return;
@@ -687,11 +732,17 @@ export function HomeClient({
                       confirmedDragRef.current.startScrollLeft - dx;
                   }}
                   onPointerUp={(e) => {
+                    const isDesktop =
+                      window.matchMedia("(min-width: 768px)").matches;
+                    if (!isDesktop) return;
                     e.preventDefault();
                     confirmedDragRef.current.active = false;
                     snapConfirmedCarousel();
                   }}
                   onPointerCancel={(e) => {
+                    const isDesktop =
+                      window.matchMedia("(min-width: 768px)").matches;
+                    if (!isDesktop) return;
                     e.preventDefault();
                     confirmedDragRef.current.active = false;
                   }}
@@ -708,6 +759,7 @@ export function HomeClient({
                       key={p.id}
                       data-confirmed-card="true"
                       className="w-full shrink-0 snap-start rounded-3xl border border-white/10 bg-black/55 p-6 text-center backdrop-blur select-none sm:w-[320px] sm:text-left"
+                      style={{ scrollSnapStop: "always" }}
                     >
                       <div className="flex flex-col items-center gap-3 text-center sm:flex-row sm:items-center sm:gap-4 sm:text-left">
                         <a
