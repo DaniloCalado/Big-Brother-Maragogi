@@ -300,23 +300,14 @@ export function HomeClient({
                 </p>
                 <div className="flex flex-col items-center justify-center rounded-3xl border border-white/10 bg-black/55 p-8 text-center backdrop-blur">
                   <div className="mx-auto flex flex-col items-center text-center">
-                    <div className="relative size-28 sm:size-32">
-                      <div className="absolute inset-0 rounded-full bg-[conic-gradient(from_180deg,#fbbf24,#f97316,#a855f7,#22d3ee,#fbbf24)]" />
-                      <div className="absolute inset-[12px] rounded-full bg-[#1a1a1a] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)]" />
-                      <div className="absolute inset-[18px] rounded-full bg-black shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)]" />
-                      <div className="absolute inset-[18px] rounded-full bg-[radial-gradient(circle_at_50%_35%,rgba(255,255,255,0.10)_0%,rgba(255,255,255,0.04)_22%,rgba(0,0,0,0.00)_58%),radial-gradient(circle_at_50%_72%,#0b0b0b_0%,#000000_70%)]" />
-                      <div className="absolute inset-[30px] rounded-full border-[8px] border-white/15" />
-                      <div className="absolute inset-[44px] rounded-full border border-white/10 opacity-60" />
-                      <div className="relative grid h-full w-full place-items-center drop-shadow-[0_10px_30px_rgba(0,0,0,0.55)]">
-                        <span className="text-3xl font-black tracking-tight text-white">
-                          BBM
-                        </span>
-                      </div>
-                    </div>
-                    <div className="mt-3">
-                      <div className="text-sm font-semibold uppercase tracking-[0.22em] text-white/80">
-                        Big Brother Maragogi
-                      </div>
+                    <div className="relative size-40 sm:size-44">
+                      <Image
+                        src="/logo-bbm.png"
+                        alt="Logo BBM"
+                        fill
+                        className="origin-center object-contain opacity-60 drop-shadow-[0_10px_30px_rgba(0,0,0,0.55)] scale-[1.8] sm:scale-[2.1]"
+                        sizes="(max-width: 640px) 160px, 176px"
+                      />
                     </div>
                   </div>
                   <Link

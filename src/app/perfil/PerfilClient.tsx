@@ -94,11 +94,6 @@ export function PerfilClient() {
     }
   }
 
-  async function logout() {
-    await fetch("/api/feed/logout", { method: "POST" });
-    window.location.href = "/";
-  }
-
   async function changePassword() {
     setPwMsg(null);
     setPwLoading(true);
