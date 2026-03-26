@@ -77,16 +77,20 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-black/40 backdrop-blur">
-      <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-6 px-4 py-3 sm:px-6">
+      <div className="mx-auto flex h-12 w-full max-w-6xl items-center justify-between gap-6 px-4 sm:px-6">
         <Link
           href="/"
           className="inline-flex items-center gap-3 text-sm font-semibold tracking-wide text-white"
         >
-          <span className="relative grid size-9 place-items-center overflow-hidden rounded-full">
-            <span className="absolute inset-0 bg-[conic-gradient(from_180deg,#fbbf24,#f97316,#a855f7,#22d3ee,#fbbf24)]" />
-            <span className="relative grid size-[34px] place-items-center rounded-full bg-black text-xs font-black">
-              BBM
-            </span>
+          <span className="relative block h-12 w-14 overflow-hidden sm:w-16">
+            <Image
+              src="/logo-bbm.png"
+              alt="Logo BBM"
+              fill
+              className="object-contain scale-[1.35]"
+              sizes="(max-width: 640px) 56px, 64px"
+              priority
+            />
           </span>
           <span className="hidden sm:block">Big Brother Maragogi</span>
         </Link>
