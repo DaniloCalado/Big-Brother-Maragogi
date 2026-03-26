@@ -305,14 +305,14 @@ export function HomeClient({
                         src="/logo-bbm.png"
                         alt="Logo BBM"
                         fill
-                        className="origin-center object-contain opacity-60 drop-shadow-[0_10px_30px_rgba(0,0,0,0.55)] scale-[1.8] sm:scale-[2.1]"
+                        className="origin-center object-contain opacity-60 drop-shadow-[0_10px_30px_rgba(0,0,0,0.55)] scale-[1.8] sm:scale-[2.1] pointer-events-none"
                         sizes="(max-width: 640px) 160px, 176px"
                       />
                     </div>
                   </div>
                   <Link
                     href="/participantes"
-                    className="mt-5 inline-flex h-10 items-center justify-center rounded-full border border-white/15 bg-black/40 px-5 text-sm font-semibold text-white/85 transition hover:bg-white/10"
+                    className="relative z-10 mt-5 inline-flex h-10 cursor-pointer items-center justify-center rounded-full border border-white/15 bg-black/40 px-5 text-sm font-semibold text-white/85 transition hover:bg-white/10"
                   >
                     Ver participantes
                   </Link>
