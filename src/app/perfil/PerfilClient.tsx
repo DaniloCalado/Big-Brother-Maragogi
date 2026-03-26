@@ -204,13 +204,6 @@ export function PerfilClient() {
               <p className="truncate text-sm text-white/65">{profile.email}</p>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={() => void logout()}
-            className="inline-flex h-9 cursor-pointer items-center justify-center rounded-full border border-white/15 bg-black/40 px-4 text-xs font-semibold text-white/85 hover:bg-white/10"
-          >
-            Sair do feed
-          </button>
         </div>
 
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
