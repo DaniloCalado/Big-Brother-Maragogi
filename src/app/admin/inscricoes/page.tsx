@@ -2,6 +2,15 @@ import { sql } from "@vercel/postgres";
 import { revalidatePath, unstable_noStore as noStore } from "next/cache";
 import Image from "next/image";
 import Link from "next/link";
+import { randomUUID } from "crypto";
+import { Resend } from "resend";
+import {
+  ensureFeedTables,
+  generatePassword,
+  generateSaltHex,
+  getBaseUrl,
+  hashPassword,
+} from "@/app/api/feed/_shared";
 
 export const dynamic = "force-dynamic";
 
@@ -71,11 +80,106 @@ async function updateStatus(formData: FormData) {
   if (!["pending", "approved", "rejected"].includes(status)) return;
 
   await ensureTable();
+
+  const beforeRes = await sql<{
+    status: string;
+    email: string;
+    nome: string;
+  }>`
+    SELECT status, email, nome
+    FROM inscricoes
+    WHERE id = ${id}
+    LIMIT 1;
+  `;
+  const before = beforeRes.rows[0] ?? null;
+
   await sql`
     UPDATE inscricoes
     SET status = ${status}, updated_at = now()
     WHERE id = ${id};
   `;
+
+  if (before && before.status !== "approved" && status === "approved") {
+    await ensureFeedTables();
+
+    const plainPassword = generatePassword();
+    const salt = generateSaltHex();
+    const hash = hashPassword(plainPassword, salt);
+
+    const existingRes = await sql<{ id: string }>`
+      SELECT id
+      FROM feed_users
+      WHERE inscricao_id = ${id} OR lower(email) = lower(${before.email})
+      LIMIT 1;
+    `;
+    const existing = existingRes.rows[0] ?? null;
+
+    if (existing) {
+      await sql`
+        UPDATE feed_users
+        SET
+          inscricao_id = ${id},
+          email = ${before.email.toLowerCase()},
+          password_hash = ${hash},
+          password_salt = ${salt},
+          updated_at = now()
+        WHERE id = ${existing.id};
+      `;
+    } else {
+      await sql`
+        INSERT INTO feed_users (id, inscricao_id, email, password_hash, password_salt)
+        VALUES (
+          ${randomUUID()},
+          ${id},
+          ${before.email.toLowerCase()},
+          ${hash},
+          ${salt}
+        );
+      `;
+    }
+
+    const resendKey = process.env.RESEND_API_KEY;
+    if (resendKey) {
+      const resend = new Resend(resendKey);
+      const baseUrl = getBaseUrl();
+      const feedUrl = `${baseUrl}/feed`;
+      const perfilUrl = `${baseUrl}/perfil`;
+      const from =
+        process.env.RESEND_FROM ??
+        "Big Brother Maragogi <onboarding@resend.dev>";
+
+      await resend.emails.send({
+        from,
+        to: before.email,
+        subject: "Você foi selecionado no Big Brother Maragogi!",
+        html: `
+          <div style="font-family:Arial,Helvetica,sans-serif;line-height:1.55;color:#111">
+            <h2 style="margin:0 0 12px 0;">Parabéns, ${before.nome}!</h2>
+            <p style="margin:0 0 12px 0;">
+              Sua inscrição foi <strong>aprovada</strong> no Big Brother Maragogi.
+            </p>
+            <p style="margin:0 0 12px 0;">
+              Para acompanhar e fazer postagens no nosso <strong>Feed</strong>, você precisa entrar com as credenciais abaixo:
+            </p>
+            <div style="background:#f6f6f6;border:1px solid #e5e5e5;border-radius:12px;padding:14px;margin:14px 0;">
+              <div style="margin:0 0 6px 0;"><strong>Login:</strong> ${before.email}</div>
+              <div style="margin:0;"><strong>Senha:</strong> ${plainPassword}</div>
+            </div>
+            <p style="margin:0 0 10px 0;">
+              Acesse o feed aqui: <a href="${feedUrl}">${feedUrl}</a>
+            </p>
+            <p style="margin:0 0 10px 0;">
+              Depois de entrar, você pode editar seus dados e também <strong>alterar sua senha</strong> no seu perfil:
+              <a href="${perfilUrl}">${perfilUrl}</a>
+            </p>
+            <p style="margin:18px 0 0 0;font-size:12px;color:#555;">
+              Se você não solicitou isso, ignore este e-mail.
+            </p>
+          </div>
+        `,
+      });
+    }
+  }
 
   revalidatePath("/admin/inscricoes");
   revalidatePath("/participantes");
@@ -97,6 +201,39 @@ async function deleteInscricao(formData: FormData) {
 
   revalidatePath("/admin/inscricoes");
   revalidatePath("/participantes");
+}
+
+async function backfillApprovedWithDefaultPassword(formData: FormData) {
+  "use server";
+
+  const password = String(formData.get("password") ?? "");
+  if (!password || password.length < 8) return;
+
+  await ensureTable();
+  await ensureFeedTables();
+
+  const list = await sql<{ id: string; email: string }>`
+    SELECT id, email
+    FROM inscricoes
+    WHERE status = 'approved';
+  `;
+
+  for (const row of list.rows) {
+    const salt = generateSaltHex();
+    const hash = hashPassword(password, salt);
+    await sql`
+      INSERT INTO feed_users (id, inscricao_id, email, password_hash, password_salt)
+      VALUES (${randomUUID()}, ${row.id}, ${row.email.toLowerCase()}, ${hash}, ${salt})
+      ON CONFLICT (email)
+      DO UPDATE SET
+        inscricao_id = EXCLUDED.inscricao_id,
+        password_hash = EXCLUDED.password_hash,
+        password_salt = EXCLUDED.password_salt,
+        updated_at = now();
+    `;
+  }
+
+  revalidatePath("/admin/inscricoes");
 }
 
 export default async function AdminInscricoesPage() {
@@ -152,12 +289,32 @@ export default async function AdminInscricoesPage() {
             Painel privado para selecionar participantes e gerenciar inscrições.
           </p>
         </div>
-        <Link
-          href="/"
-          className="inline-flex h-10 cursor-pointer items-center justify-center rounded-full border border-white/15 bg-black/40 px-5 text-sm font-semibold text-white/85 hover:bg-white/10"
-        >
-          Voltar para home
-        </Link>
+        <div className="flex items-center gap-2">
+          <form
+            action={backfillApprovedWithDefaultPassword}
+            className="hidden items-center gap-2 sm:flex"
+            title="Definir uma senha padrão para todos os selecionados (apenas os já aprovados)."
+          >
+            <input
+              name="password"
+              type="password"
+              placeholder="Senha padrão (mín. 8)"
+              className="h-10 rounded-full border border-white/15 bg-black/40 px-4 text-sm text-white/85 outline-none placeholder:text-white/40"
+            />
+            <button
+              type="submit"
+              className="inline-flex h-10 cursor-pointer items-center justify-center rounded-full border border-white/15 bg-black/40 px-5 text-sm font-semibold text-white/85 hover:bg-white/10"
+            >
+              Aplicar senha padrão
+            </button>
+          </form>
+          <Link
+            href="/"
+            className="inline-flex h-10 cursor-pointer items-center justify-center rounded-full border border-white/15 bg-black/40 px-5 text-sm font-semibold text-white/85 hover:bg-white/10"
+          >
+            Voltar para home
+          </Link>
+        </div>
       </div>
 
       {dbError ? (
