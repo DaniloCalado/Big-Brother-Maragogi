@@ -13,9 +13,18 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const siteUrl =
+const rawSiteUrl =
+  process.env.SITE_URL ??
   process.env.NEXT_PUBLIC_SITE_URL ??
+  process.env.NEXT_PUBLIC_VERCEL_URL ??
   (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null);
+
+const siteUrl =
+  rawSiteUrl && rawSiteUrl.startsWith("http")
+    ? rawSiteUrl
+    : rawSiteUrl
+      ? `https://${rawSiteUrl}`
+      : null;
 
 const metadataBase = siteUrl
   ? new URL(siteUrl)

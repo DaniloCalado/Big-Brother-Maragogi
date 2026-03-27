@@ -105,8 +105,16 @@ export function generateSessionToken() {
 }
 
 export function getBaseUrl() {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
-  if (siteUrl) return siteUrl.replace(/\/+$/, "");
+  const siteUrl =
+    process.env.SITE_URL ??
+    process.env.NEXT_PUBLIC_SITE_URL ??
+    process.env.NEXT_PUBLIC_VERCEL_URL;
+  if (siteUrl) {
+    const normalized = siteUrl.startsWith("http")
+      ? siteUrl
+      : `https://${siteUrl}`;
+    return normalized.replace(/\/+$/, "");
+  }
   const vercel = process.env.VERCEL_URL;
   if (vercel) return `https://${vercel}`.replace(/\/+$/, "");
   return "http://localhost:3000";
