@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import logoBBE from "../../public/logo-BBE.png";
 
 const navItems = [
   { href: "/feed", label: "Feed" },
@@ -69,9 +70,9 @@ export function SiteHeader() {
     const handler = () => {
       void refreshMe();
     };
-    window.addEventListener("bbm-feed-auth-changed", handler);
+    window.addEventListener("bbe-feed-auth-changed", handler);
     return () => {
-      window.removeEventListener("bbm-feed-auth-changed", handler);
+      window.removeEventListener("bbe-feed-auth-changed", handler);
     };
   }, []);
 
@@ -84,15 +85,15 @@ export function SiteHeader() {
         >
           <span className="relative block h-12 w-14 overflow-hidden sm:w-16">
             <Image
-              src="/logo-bbm.png"
-              alt="Logo BBM"
+              src={logoBBE}
+              alt="Logo BBE"
               fill
               className="object-contain scale-[1.35]"
               sizes="(max-width: 640px) 56px, 64px"
               priority
             />
           </span>
-          <span className="hidden sm:block">Big Brother Maragogi</span>
+          <span className="hidden sm:block">Big Brother Enseada</span>
         </Link>
 
         <Link

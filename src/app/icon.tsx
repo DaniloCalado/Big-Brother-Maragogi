@@ -36,7 +36,7 @@ export default function Icon() {
           letterSpacing: -0.6,
         }}
       >
-        BBM
+        BBE
       </div>
     </div>,
     size,

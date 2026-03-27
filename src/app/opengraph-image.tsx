@@ -68,7 +68,7 @@ export default function OpenGraphImage() {
               letterSpacing: 0.2,
             }}
           >
-            Semana Santa • 2 a 5 de abril • Maragogi - AL
+            Semana Santa • 2 a 5 de abril • Enseada dos Corais - PE
           </div>
           <div
             style={{
@@ -82,7 +82,7 @@ export default function OpenGraphImage() {
             }}
           >
             <div>Big Brother</div>
-            <div>Maragogi</div>
+            <div>Enseada</div>
           </div>
           <div
             style={{
@@ -116,7 +116,7 @@ export default function OpenGraphImage() {
               letterSpacing: -1,
             }}
           >
-            BBM
+            BBE
           </div>
         </div>
       </div>

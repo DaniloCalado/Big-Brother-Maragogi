@@ -146,17 +146,17 @@ async function updateStatus(formData: FormData) {
       const perfilUrl = `${baseUrl}/perfil`;
       const from =
         process.env.RESEND_FROM ??
-        "Big Brother Maragogi <onboarding@resend.dev>";
+        "Big Brother Enseada <onboarding@resend.dev>";
 
       await resend.emails.send({
         from,
         to: before.email,
-        subject: "Você foi selecionado no Big Brother Maragogi!",
+        subject: "Você foi selecionado no Big Brother Enseada!",
         html: `
           <div style="font-family:Arial,Helvetica,sans-serif;line-height:1.55;color:#111">
             <h2 style="margin:0 0 12px 0;">Parabéns, ${before.nome}!</h2>
             <p style="margin:0 0 12px 0;">
-              Sua inscrição foi <strong>aprovada</strong> no Big Brother Maragogi.
+              Sua inscrição foi <strong>aprovada</strong> no Big Brother Enseada.
             </p>
             <p style="margin:0 0 12px 0;">
               Para acompanhar e fazer postagens no nosso <strong>Feed</strong>, você precisa entrar com as credenciais abaixo:

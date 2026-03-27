@@ -6,7 +6,7 @@ export function SiteFooter() {
       <div className="mx-auto w-full max-w-6xl px-4 py-10 text-sm text-white/70 sm:px-6">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <p>
-            Big Brother Maragogi • Semana Santa (2 a 5 de abril) • Maragogi - AL
+            Big Brother Enseada • Semana Santa (2 a 5 de abril) • Enseada dos Corais - PE
           </p>
           <div className="flex flex-col gap-2 sm:items-end">
             <span className="inline-flex items-center gap-3">

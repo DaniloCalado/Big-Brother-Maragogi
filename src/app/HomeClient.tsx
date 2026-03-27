@@ -5,6 +5,7 @@ import Link from "next/link";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 import { useEffect, useRef, useState } from "react";
+import logoBBE from "../../public/logo-BBE.png";
 
 export type ConfirmedParticipant = {
   id: string;
@@ -15,36 +16,19 @@ export type ConfirmedParticipant = {
 };
 
 const localSlides = [
-  { src: "/casa-1.jpeg", alt: "Casa — foto 1" },
-  { src: "/casa-2.jpeg", alt: "Casa — foto 2" },
-  { src: "/casa-3.jpeg", alt: "Casa — foto 3" },
+  { src: "/enseada-casa-1.jpeg", alt: "Casa — foto 1" },
+  { src: "/enseada-casa-2.jpeg", alt: "Casa — foto 2" },
+  { src: "/enseada-casa-3.jpeg", alt: "Casa — foto 3" },
+  { src: "/enseada-casa-4.jpeg", alt: "Casa — foto 4" },
 ] as const;
 
 const galleryImages = [
-  {
-    src: "https://commons.wikimedia.org/wiki/Special:FilePath/Maragogi4.JPG",
-    alt: "Maragogi, Alagoas",
-  },
-  {
-    src: "https://commons.wikimedia.org/wiki/Special:FilePath/Praia%20de%20Antunes%20(51724006234).jpg",
-    alt: "Praia de Antunes, Maragogi",
-  },
-  {
-    src: "https://commons.wikimedia.org/wiki/Special:FilePath/Praia%20de%20Maragogi.jpg",
-    alt: "Praia de Maragogi",
-  },
-  {
-    src: "https://commons.wikimedia.org/wiki/Special:FilePath/Pontal%20do%20Maragogi%20-%20panoramio.jpg",
-    alt: "Pontal do Maragogi",
-  },
-  {
-    src: "https://a0.muscache.com/pictures/4881b2ec-055d-47a5-9f54-270192e67710.jpg",
-    alt: "Churrasqueira na praia",
-  },
-  {
-    src: "https://commons.wikimedia.org/wiki/Special:FilePath/Misquamicut%20Beach,%20RI%202009-08-03%205.JPG",
-    alt: "Casa de praia (ilustração) — ângulo 2",
-  },
+  { src: "/galeria-1.jpeg", alt: "Galeria — foto 1" },
+  { src: "/galeria-2.jpeg", alt: "Galeria — foto 2" },
+  { src: "/galeria-3.jpeg", alt: "Galeria — foto 3" },
+  { src: "/galeria-4.jpeg", alt: "Galeria — foto 4" },
+  { src: "/galeria-5.jpeg", alt: "Galeria — foto 5" },
+  { src: "/galeria-6.jpeg", alt: "Galeria — foto 6" },
 ] as const;
 
 export function HomeClient({
@@ -247,7 +231,7 @@ export function HomeClient({
           <div className="absolute inset-0">
             <Image
               src="https://commons.wikimedia.org/wiki/Special:FilePath/Praia%20de%20Maragogi.jpg"
-              alt="Praia de Maragogi, Alagoas"
+              alt="Enseada dos Corais, Pernambuco"
               fill
               priority
               loading="eager"
@@ -263,10 +247,12 @@ export function HomeClient({
               <div className="lg:col-span-7">
                 <div className="mx-auto flex w-fit items-center justify-center gap-2 rounded-full border border-white/15 bg-black/40 px-4 py-2 text-center text-xs font-semibold text-white/90 sm:mx-0 sm:justify-start sm:text-left">
                   <span className="size-2 rounded-full bg-yellow-400" />
-                  <span>Semana Santa • 2 a 5 de abril • Maragogi - AL</span>
+                  <span>
+                    Semana Santa • 2 a 5 de abril • Enseada dos Corais - PE
+                  </span>
                 </div>
                 <h1 className="mt-5 text-center text-4xl font-black leading-tight tracking-tight sm:text-left sm:text-6xl">
-                  Big Brother Maragogi
+                  Big Brother Enseada
                 </h1>
                 <p className="mt-5 max-w-xl text-base leading-7 text-white/80 sm:text-lg">
                   Experiência na praia com provas, convivência , muita bebida e
@@ -302,8 +288,8 @@ export function HomeClient({
                   <div className="mx-auto flex flex-col items-center text-center">
                     <div className="relative size-40 sm:size-44">
                       <Image
-                        src="/logo-bbm.png"
-                        alt="Logo BBM"
+                        src={logoBBE}
+                        alt="Logo BBE"
                         fill
                         className="origin-center object-contain opacity-60 drop-shadow-[0_10px_30px_rgba(0,0,0,0.55)] scale-[1.8] sm:scale-[2.1] pointer-events-none"
                         sizes="(max-width: 640px) 160px, 176px"
@@ -323,7 +309,7 @@ export function HomeClient({
             <div className="mt-6 grid gap-4 sm:mt-14 sm:grid-cols-3">
               {[
                 { label: "Datas", value: "2 a 5 de abril" },
-                { label: "Cidade", value: "Maragogi • AL" },
+                { label: "Cidade", value: "Cabo • PE" },
                 { label: "Base", value: "Casa de Praia do RT" },
               ].map((card) => (
                 <div
@@ -348,17 +334,17 @@ export function HomeClient({
                   Sobre o evento
                 </h2>
                 <p className="mt-4 text-base leading-7 text-white/75">
-                  O Big Brother Maragogi acontece na Semana Santa, de{" "}
+                  O Big Brother Enseada acontece na Semana Santa, de{" "}
                   <span className="text-white">2 de abril</span> a{" "}
                   <span className="text-white">5 de abril</span>, em uma casa de
-                  praia em Maragogi, Alagoas. A proposta é reunir participantes
-                  para uma vivência intensa de convivência, conteúdo, diversão e
-                  desafios.
+                  praia em Enseada dos Corais, Pernambuco. A proposta é reunir
+                  participantes para uma vivência intensa de convivência,
+                  conteúdo, diversão e desafios.
                 </p>
                 <div className="mt-6 flex flex-col gap-3 text-sm text-white/80">
                   <div className="flex items-start gap-3">
                     <span className="mt-1 size-2 rounded-full bg-cyan-400" />
-                    <p>Local: Maragogi - AL • Casa de praia</p>
+                    <p>Local: Enseada dos Corais - PE • Casa de praia</p>
                   </div>
                   <div className="flex items-start gap-3">
                     <span className="mt-1 size-2 rounded-full bg-purple-400" />
@@ -374,7 +360,7 @@ export function HomeClient({
               <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/5">
                 <Image
                   src="/maragogi-1.jpeg"
-                  alt="Maragogi — foto 1"
+                  alt="Enseada dos Corais — foto 1"
                   width={1200}
                   height={800}
                   className="h-auto w-full object-cover"
@@ -470,7 +456,7 @@ export function HomeClient({
                   },
                   {
                     title: "Eliminações",
-                    desc: "Todo dia algumas pessoas serão eliminadas. O último que ficar é o vencedor do Big Brother Maragogi.",
+                    desc: "Todo dia algumas pessoas serão eliminadas. O último que ficar é o vencedor do Big Brother Enseada.",
                     icon: (
                       <svg
                         aria-hidden="true"
@@ -612,12 +598,12 @@ export function HomeClient({
                   A CASA
                 </h2>
                 <p className="mt-2 text-sm font-semibold tracking-wide text-white/70">
-                  Maragogi - Alagoas
+                  Enseada dos Corais - PE
                 </p>
                 <p className="mt-4 text-base leading-7 text-white/75">
-                  Maragogi é conhecida pelas águas claras e piscinas naturais —
-                  o cenário perfeito para uma experiência intensa e ao mesmo
-                  tempo leve, com clima de praia e Semana Santa.
+                  Enseada dos Corais é conhecida pelo clima de praia — o cenário
+                  perfeito para uma experiência intensa e ao mesmo tempo leve,
+                  com vibe de Semana Santa.
                 </p>
                 <div className="mt-6 rounded-2xl border border-white/10 bg-black/60 p-6">
                   <div className="sr-only">Card de informações</div>
@@ -625,7 +611,7 @@ export function HomeClient({
                     Base do evento
                   </p>
                   <p className="mt-2 text-sm leading-6 text-white/70">
-                    Casa de praia em Maragogi - AL
+                    Casa de praia em Enseada dos Corais - PE
                   </p>
                   <p className="mt-4 text-sm font-semibold text-white">Datas</p>
                   <p className="mt-2 text-sm leading-6 text-white/70">
@@ -652,7 +638,7 @@ export function HomeClient({
                 Participantes Confirmados
               </h2>
               <p className="text-base text-white/75">
-                Quem já foi selecionado para o BBM.
+                Quem já foi selecionado para o BBE.
               </p>
             </div>
 
@@ -809,7 +795,7 @@ export function HomeClient({
                 Galeria
               </h2>
               <p className="text-base text-white/75">
-                Praia, casa e uma vibe de reality pra entrar no clima do BBM.
+                Praia, casa e uma vibe de reality pra entrar no clima do BBE.
               </p>
             </div>
 
@@ -865,7 +851,11 @@ export function HomeClient({
                         alt={img.alt}
                         fill
                         priority={index === 0}
-                        className="object-cover"
+                        className={
+                          index === 0
+                            ? "object-contain bg-black/20"
+                            : "object-cover"
+                        }
                         sizes="(max-width: 768px) calc(100vw - 2rem), 768px"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/0 to-black/0" />
@@ -877,7 +867,7 @@ export function HomeClient({
             </div>
 
             <div className="mt-10 hidden gap-4 md:grid md:grid-cols-2 lg:grid-cols-3">
-              {galleryImages.map((img) => (
+              {galleryImages.map((img, index) => (
                 <div
                   key={img.src}
                   className="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/5"
@@ -887,7 +877,7 @@ export function HomeClient({
                     alt={img.alt}
                     width={1200}
                     height={900}
-                    className="h-64 w-full object-cover transition duration-500 group-hover:scale-[1.02] sm:h-72"
+                    className={`h-64 w-full ${index === 0 ? "object-contain" : "object-cover"} transition duration-500 group-hover:scale-[1.02] sm:h-72`}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/0 to-black/0" />
                 </div>

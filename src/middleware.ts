@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 function unauthorized() {
   return new NextResponse("Acesso restrito.", {
     status: 401,
-    headers: { "WWW-Authenticate": 'Basic realm="BBM Admin"' },
+    headers: { "WWW-Authenticate": 'Basic realm="BBE Admin"' },
   });
 }
 
@@ -12,9 +12,12 @@ export function middleware(request: NextRequest) {
   const pass = process.env.ADMIN_PASSWORD;
 
   if (!user || !pass) {
-    return new NextResponse("Admin não configurado (defina ADMIN_USER e ADMIN_PASSWORD).", {
-      status: 500,
-    });
+    return new NextResponse(
+      "Admin não configurado (defina ADMIN_USER e ADMIN_PASSWORD).",
+      {
+        status: 500,
+      },
+    );
   }
 
   const header = request.headers.get("authorization");
@@ -37,4 +40,3 @@ export function middleware(request: NextRequest) {
 export const config = {
   matcher: ["/admin/:path*"],
 };
-

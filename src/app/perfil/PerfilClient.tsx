@@ -88,7 +88,7 @@ export function PerfilClient() {
       }
       setSaveMsg("Dados atualizados.");
       await loadProfile();
-      window.dispatchEvent(new Event("bbm-feed-auth-changed"));
+      window.dispatchEvent(new Event("bbe-feed-auth-changed"));
     } finally {
       setSaving(false);
     }

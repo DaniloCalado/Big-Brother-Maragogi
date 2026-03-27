@@ -108,7 +108,7 @@ export function FeedClient() {
       setLoginPassword("");
       await refreshMe();
       await refreshPosts();
-      window.dispatchEvent(new Event("bbm-feed-auth-changed"));
+      window.dispatchEvent(new Event("bbe-feed-auth-changed"));
     } finally {
       setLoginLoading(false);
     }

@@ -315,7 +315,7 @@ export function InscricaoForm({
 
       <label className="flex flex-col gap-2">
         <span className="text-sm font-semibold text-white">
-          Por que você deveria participar do BBM?
+          Por que você deveria participar do BBE?
         </span>
         <textarea
           value={descricao}

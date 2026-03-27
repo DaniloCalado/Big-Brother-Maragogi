@@ -23,24 +23,24 @@ const metadataBase = siteUrl
 
 export const metadata: Metadata = {
   metadataBase,
-  title: "Big Brother Maragogi",
+  title: "Big Brother Enseada",
   description:
-    "Big Brother Maragogi: experiência na Semana Santa (2 a 5 de abril) em uma casa de praia em Maragogi - AL. Inscreva-se.",
+    "Big Brother Enseada: experiência na Semana Santa (2 a 5 de abril) em uma casa de praia em Enseada dos Corais - PE. Inscreva-se.",
   openGraph: {
-    title: "Big Brother Maragogi",
+    title: "Big Brother Enseada",
     description:
-      "Big Brother Maragogi: experiência na Semana Santa (2 a 5 de abril) em uma casa de praia em Maragogi - AL. Inscreva-se.",
+      "Big Brother Enseada: experiência na Semana Santa (2 a 5 de abril) em uma casa de praia em Enseada dos Corais - PE. Inscreva-se.",
     url: "/",
-    siteName: "Big Brother Maragogi",
+    siteName: "Big Brother Enseada",
     locale: "pt_BR",
     type: "website",
     images: [{ url: "/opengraph-image.png", width: 1200, height: 630 }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Big Brother Maragogi",
+    title: "Big Brother Enseada",
     description:
-      "Big Brother Maragogi: experiência na Semana Santa (2 a 5 de abril) em uma casa de praia em Maragogi - AL. Inscreva-se.",
+      "Big Brother Enseada: experiência na Semana Santa (2 a 5 de abril) em uma casa de praia em Enseada dos Corais - PE. Inscreva-se.",
     images: ["/opengraph-image.png"],
   },
   icons: {

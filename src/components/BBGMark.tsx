@@ -4,7 +4,7 @@ type BBGMarkProps = {
 };
 
 export function BBGMark({
-  subtitle = "Big Brother Maragogi",
+  subtitle = "Big Brother Enseada",
   className,
 }: BBGMarkProps) {
   return (
@@ -18,7 +18,7 @@ export function BBGMark({
         <div className="absolute inset-[44px] rounded-full border border-white/10 opacity-60" />
         <div className="relative grid h-full w-full place-items-center drop-shadow-[0_10px_30px_rgba(0,0,0,0.55)]">
           <span className="text-2xl font-black tracking-tight text-white sm:text-3xl">
-            BBM
+            BBE
           </span>
         </div>
       </div>

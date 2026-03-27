@@ -24,7 +24,7 @@ export default function InscricaoPage() {
         <div className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 sm:py-16">
           <div className="flex flex-col gap-3">
             <p className="text-xs font-semibold tracking-wide text-white/70">
-              Semana Santa • 2 a 5 de abril • Maragogi - AL
+              Semana Santa • 2 a 5 de abril • Enseada dos Corais - PE
             </p>
             <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
               Formulário de inscrição

@@ -114,13 +114,13 @@ export async function POST(req: Request) {
 
     const resendKey = process.env.RESEND_API_KEY ?? "";
     const from =
-      process.env.RESEND_FROM ?? "Big Brother Maragogi <onboarding@resend.dev>";
+      process.env.RESEND_FROM ?? "Big Brother Enseada <onboarding@resend.dev>";
 
-    const subject = `Inscrição — Big Brother Maragogi — ${nome}`;
+    const subject = `Inscrição — Big Brother Enseada — ${nome}`;
     const html = `
       <div style="font-family:Arial,Helvetica,sans-serif;line-height:1.5;color:#111">
-        <h2 style="margin:0 0 12px">Nova inscrição — Big Brother Maragogi</h2>
-        <p style="margin:0 0 16px">Semana Santa • 2 a 5 de abril • Maragogi - AL</p>
+        <h2 style="margin:0 0 12px">Nova inscrição — Big Brother Enseada</h2>
+        <p style="margin:0 0 16px">Semana Santa • 2 a 5 de abril • Enseada dos Corais - PE</p>
         <p style="margin:0 0 16px"><strong>ID:</strong> ${inscricaoId}</p>
 
         <table style="border-collapse:collapse;width:100%;max-width:680px">
