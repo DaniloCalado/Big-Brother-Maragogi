@@ -6,7 +6,13 @@ import { revalidatePath } from "next/cache";
 
 export const runtime = "nodejs";
 
-const ADMIN_EMAIL = "danilocarvalhocalado@gmail.com";
+const DEFAULT_ADMIN_EMAILS = ["danilocarvalhocalado@gmail.com"];
+const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? "")
+  .split(",")
+  .map((s) => s.trim())
+  .filter(Boolean);
+const NOTIFICATION_EMAILS =
+  ADMIN_EMAILS.length > 0 ? ADMIN_EMAILS : DEFAULT_ADMIN_EMAILS;
 
 function getText(formData: FormData, key: string) {
   const value = formData.get(key);
@@ -155,14 +161,26 @@ export async function POST(req: Request) {
     } else {
       try {
         const resend = new Resend(resendKey);
-        await resend.emails.send({
-          from,
-          to: [ADMIN_EMAIL, "rcava@scangl.com"],
-          replyTo: email,
-          subject,
-          html,
-        });
-        emailSent = true;
+        const failures: string[] = [];
+        for (const recipient of NOTIFICATION_EMAILS) {
+          try {
+            await resend.emails.send({
+              from,
+              to: recipient,
+              replyTo: email,
+              subject,
+              html,
+            });
+            emailSent = true;
+          } catch (innerErr) {
+            const msg =
+              innerErr instanceof Error
+                ? innerErr.message
+                : "Falha ao enviar e-mail";
+            failures.push(`${recipient}: ${msg}`);
+          }
+        }
+        if (failures.length > 0) emailError = failures.join(" | ");
       } catch (err) {
         emailError =
           err instanceof Error ? err.message : "Falha ao enviar e-mail";
