@@ -1,12 +1,12 @@
 import { sql } from "@vercel/postgres";
 import { revalidatePath, unstable_noStore as noStore } from "next/cache";
+import { redirect } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { randomUUID } from "crypto";
 import { Resend } from "resend";
 import {
   ensureFeedTables,
-  generatePassword,
   generateSaltHex,
   getBaseUrl,
   hashPassword,
@@ -17,6 +17,9 @@ export const dynamic = "force-dynamic";
 const SELECTION_NOTIFICATION_EMAIL =
   (process.env.SELECTION_NOTIFICATION_EMAIL ?? "").trim() ||
   "danilocarvalhocalado@gmail.com";
+
+const DEFAULT_APPROVED_PASSWORD =
+  (process.env.DEFAULT_APPROVED_PASSWORD ?? "").trim() || "PadraoRT";
 
 type Inscricao = {
   id: string;
@@ -54,6 +57,19 @@ function statusTone(status: string) {
   return "border-white/15 bg-black/40 text-white/80";
 }
 
+async function resolveSearchParams(
+  searchParams?:
+    | Record<string, string | string[] | undefined>
+    | Promise<Record<string, string | string[] | undefined>>,
+) {
+  if (
+    typeof (searchParams as { then?: unknown } | undefined)?.then === "function"
+  ) {
+    return await searchParams;
+  }
+  return searchParams;
+}
+
 async function ensureTable() {
   await sql`
     CREATE TABLE IF NOT EXISTS inscricoes (
@@ -75,6 +91,20 @@ async function ensureTable() {
   await sql`CREATE INDEX IF NOT EXISTS idx_inscricoes_status ON inscricoes(status);`;
 }
 
+async function ensureWhatsAppPromptTable() {
+  await sql`
+    CREATE TABLE IF NOT EXISTS admin_whatsapp_prompts (
+      id uuid PRIMARY KEY,
+      inscricao_id uuid NOT NULL,
+      whatsapp_phone text,
+      whatsapp_text text NOT NULL,
+      created_at timestamptz NOT NULL DEFAULT now(),
+      expires_at timestamptz NOT NULL
+    );
+  `;
+  await sql`CREATE INDEX IF NOT EXISTS idx_admin_whatsapp_prompts_expires ON admin_whatsapp_prompts(expires_at);`;
+}
+
 async function updateStatus(formData: FormData) {
   "use server";
 
@@ -89,8 +119,9 @@ async function updateStatus(formData: FormData) {
     status: string;
     email: string;
     nome: string;
+    telefone: string;
   }>`
-    SELECT status, email, nome
+    SELECT status, email, nome, telefone
     FROM inscricoes
     WHERE id = ${id}
     LIMIT 1;
@@ -106,7 +137,7 @@ async function updateStatus(formData: FormData) {
   if (before && before.status !== "approved" && status === "approved") {
     await ensureFeedTables();
 
-    const plainPassword = generatePassword();
+    const plainPassword = DEFAULT_APPROVED_PASSWORD;
     const salt = generateSaltHex();
     const hash = hashPassword(plainPassword, salt);
 
@@ -191,12 +222,98 @@ Para alterar a senha: acesse o Feed (${feedUrl}), faça login e depois vá no me
         `,
       });
     }
+
+    await ensureWhatsAppPromptTable();
+    const baseUrl = getBaseUrl();
+    const feedUrl = `${baseUrl}/feed`;
+    const whatsappDigits = (before.telefone ?? "").replace(/\D/g, "");
+    const whatsappPhone = whatsappDigits.startsWith("55")
+      ? whatsappDigits
+      : whatsappDigits.length === 10 || whatsappDigits.length === 11
+        ? `55${whatsappDigits}`
+        : "";
+    const whatsappText = `Parabéns, ${before.nome}! 🎉
+
+Sua inscrição foi APROVADA no Big Brother Enseada.
+
+Para acessar o Feed e postar, use:
+Login: ${before.email}
+Senha: ${plainPassword}
+
+Feed: ${feedUrl}
+Para alterar a senha: acesse o Feed (${feedUrl}), faça login e depois vá no menu (dropdown) > Perfil > Alterar senha.`;
+    const promptId = randomUUID();
+    await sql`
+      INSERT INTO admin_whatsapp_prompts (
+        id,
+        inscricao_id,
+        whatsapp_phone,
+        whatsapp_text,
+        expires_at
+      )
+      VALUES (
+        ${promptId},
+        ${id},
+        ${whatsappPhone || null},
+        ${whatsappText},
+        now() + interval '1 day'
+      );
+    `;
+
+    revalidatePath("/admin/inscricoes");
+    revalidatePath("/participantes");
+    redirect(`/admin/inscricoes?whatsPrompt=${promptId}`);
   }
 
   revalidatePath("/admin/inscricoes");
   revalidatePath("/participantes");
 }
 
+async function dismissWhatsAppPrompt(formData: FormData) {
+  "use server";
+
+  const promptId = String(formData.get("promptId") ?? "");
+  if (!promptId) return;
+
+  await ensureWhatsAppPromptTable();
+  await sql`
+    DELETE FROM admin_whatsapp_prompts
+    WHERE id = ${promptId};
+  `;
+  redirect("/admin/inscricoes");
+}
+
+async function openWhatsAppPrompt(formData: FormData) {
+  "use server";
+
+  const promptId = String(formData.get("promptId") ?? "");
+  if (!promptId) return;
+
+  await ensureWhatsAppPromptTable();
+
+  const promptRes = await sql<{
+    whatsapp_phone: string | null;
+    whatsapp_text: string;
+  }>`
+    SELECT whatsapp_phone, whatsapp_text
+    FROM admin_whatsapp_prompts
+    WHERE id = ${promptId} AND expires_at > now()
+    LIMIT 1;
+  `;
+  const prompt = promptRes.rows[0] ?? null;
+
+  await sql`
+    DELETE FROM admin_whatsapp_prompts
+    WHERE id = ${promptId};
+  `;
+
+  if (!prompt?.whatsapp_phone) {
+    redirect("/admin/inscricoes");
+  }
+
+  const whatsappUrl = `https://wa.me/${prompt.whatsapp_phone}?text=${encodeURIComponent(prompt.whatsapp_text)}`;
+  redirect(whatsappUrl);
+}
 async function deleteInscricao(formData: FormData) {
   "use server";
 
@@ -248,14 +365,35 @@ async function backfillApprovedWithDefaultPassword(formData: FormData) {
   revalidatePath("/admin/inscricoes");
 }
 
-export default async function AdminInscricoesPage() {
+export default async function AdminInscricoesPage({
+  searchParams,
+}: {
+  searchParams?:
+    | Record<string, string | string[] | undefined>
+    | Promise<Record<string, string | string[] | undefined>>;
+}) {
   noStore();
   let inscricoes: Inscricao[] = [];
   let counts: StatusCount[] = [];
   let dbError: string | null = null;
+  let whatsappPrompt: {
+    id: string;
+    nome: string;
+    telefone: string;
+    email: string;
+    whatsapp_phone: string | null;
+    whatsapp_text: string;
+  } | null = null;
+
+  const resolvedSearchParams = await resolveSearchParams(searchParams);
+  const whatsPromptParam = resolvedSearchParams?.whatsPrompt;
+  const whatsPromptId =
+    typeof whatsPromptParam === "string" ? whatsPromptParam : null;
 
   try {
     await ensureTable();
+    await ensureWhatsAppPromptTable();
+    await sql`DELETE FROM admin_whatsapp_prompts WHERE expires_at <= now();`;
     const countResult = await sql<StatusCount>`
       SELECT status, COUNT(*)::int as count
       FROM inscricoes
@@ -281,6 +419,30 @@ export default async function AdminInscricoesPage() {
       LIMIT 300;
     `;
     inscricoes = result.rows;
+
+    if (whatsPromptId) {
+      const promptRes = await sql<{
+        id: string;
+        nome: string;
+        telefone: string;
+        email: string;
+        whatsapp_phone: string | null;
+        whatsapp_text: string;
+      }>`
+        SELECT
+          p.id,
+          i.nome,
+          i.telefone,
+          i.email,
+          p.whatsapp_phone,
+          p.whatsapp_text
+        FROM admin_whatsapp_prompts p
+        JOIN inscricoes i ON i.id = p.inscricao_id
+        WHERE p.id = ${whatsPromptId} AND p.expires_at > now()
+        LIMIT 1;
+      `;
+      whatsappPrompt = promptRes.rows[0] ?? null;
+    }
   } catch (err) {
     dbError = err instanceof Error ? err.message : "Erro desconhecido";
   }
@@ -542,6 +704,59 @@ export default async function AdminInscricoesPage() {
           </div>
         ))}
       </div>
+
+      {whatsappPrompt ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 backdrop-blur-sm">
+          <div className="w-full max-w-xl rounded-3xl border border-white/10 bg-black/80 p-6">
+            <p className="text-lg font-semibold text-white">
+              Notificar usuário por WhatsApp?
+            </p>
+            <p className="mt-2 text-sm text-white/70">
+              Mensagem já preenchida para <strong>{whatsappPrompt.nome}</strong>{" "}
+              ({whatsappPrompt.telefone}).
+            </p>
+
+            <div className="mt-5 rounded-2xl border border-white/10 bg-black/40 p-4">
+              <p className="text-sm font-semibold text-white">
+                Prévia da mensagem
+              </p>
+              <pre className="mt-3 max-h-64 overflow-auto whitespace-pre-wrap text-sm leading-6 text-white/80">
+                {whatsappPrompt.whatsapp_text}
+              </pre>
+            </div>
+
+            <div className="mt-6 flex flex-wrap items-center justify-end gap-2">
+              <form action={dismissWhatsAppPrompt}>
+                <input
+                  type="hidden"
+                  name="promptId"
+                  value={whatsappPrompt.id}
+                />
+                <button
+                  type="submit"
+                  className="inline-flex h-10 cursor-pointer items-center justify-center rounded-full border border-white/15 bg-black/40 px-5 text-sm font-semibold text-white/85 hover:bg-white/10"
+                >
+                  Não, não precisa
+                </button>
+              </form>
+              <form action={openWhatsAppPrompt}>
+                <input
+                  type="hidden"
+                  name="promptId"
+                  value={whatsappPrompt.id}
+                />
+                <button
+                  type="submit"
+                  disabled={!whatsappPrompt.whatsapp_phone}
+                  className="inline-flex h-10 cursor-pointer items-center justify-center rounded-full bg-emerald-400/90 px-5 text-sm font-semibold text-black hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Sim, quero notificar no WhatsApp
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </main>
   );
 }
