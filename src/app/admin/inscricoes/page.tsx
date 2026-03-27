@@ -14,6 +14,10 @@ import {
 
 export const dynamic = "force-dynamic";
 
+const SELECTION_NOTIFICATION_EMAIL =
+  (process.env.SELECTION_NOTIFICATION_EMAIL ?? "").trim() ||
+  "danilocarvalhocalado@gmail.com";
+
 type Inscricao = {
   id: string;
   created_at: string;
@@ -143,38 +147,46 @@ async function updateStatus(formData: FormData) {
       const resend = new Resend(resendKey);
       const baseUrl = getBaseUrl();
       const feedUrl = `${baseUrl}/feed`;
-      const perfilUrl = `${baseUrl}/perfil`;
       const from =
         process.env.RESEND_FROM ??
         "Big Brother Enseada <onboarding@resend.dev>";
 
       await resend.emails.send({
         from,
-        to: before.email,
+        to: SELECTION_NOTIFICATION_EMAIL,
         subject: "Você foi selecionado no Big Brother Enseada!",
         html: `
           <div style="font-family:Arial,Helvetica,sans-serif;line-height:1.55;color:#111">
-            <h2 style="margin:0 0 12px 0;">Parabéns, ${before.nome}!</h2>
-            <p style="margin:0 0 12px 0;">
-              Sua inscrição foi <strong>aprovada</strong> no Big Brother Enseada.
-            </p>
-            <p style="margin:0 0 12px 0;">
-              Para acompanhar e fazer postagens no nosso <strong>Feed</strong>, você precisa entrar com as credenciais abaixo:
-            </p>
-            <div style="background:#f6f6f6;border:1px solid #e5e5e5;border-radius:12px;padding:14px;margin:14px 0;">
-              <div style="margin:0 0 6px 0;"><strong>Login:</strong> ${before.email}</div>
-              <div style="margin:0;"><strong>Senha:</strong> ${plainPassword}</div>
+            <h2 style="margin:0 0 12px 0;">Participante selecionado: ${before.nome}</h2>
+
+            <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:14px;margin:14px 0;">
+              <div style="font-weight:700;margin:0 0 6px 0;">Ação</div>
+              <div style="margin:0;">
+                Copie e cole a mensagem pronta abaixo e envie para o participante.
+              </div>
+              <div style="margin:10px 0 0 0;font-size:12px;color:#7c2d12;">
+                Destinatário do participante: <strong>${before.email}</strong>
+              </div>
             </div>
-            <p style="margin:0 0 10px 0;">
-              Acesse o feed aqui: <a href="${feedUrl}">${feedUrl}</a>
-            </p>
-            <p style="margin:0 0 10px 0;">
-              Depois de entrar, você pode editar seus dados e também <strong>alterar sua senha</strong> no seu perfil:
-              <a href="${perfilUrl}">${perfilUrl}</a>
-            </p>
-            <p style="margin:18px 0 0 0;font-size:12px;color:#555;">
-              Se você não solicitou isso, ignore este e-mail.
-            </p>
+
+            <div style="background:#f6f6f6;border:1px solid #e5e5e5;border-radius:12px;padding:14px;margin:14px 0;">
+              <div style="font-weight:700;margin:0 0 8px 0;">Mensagem para copiar e enviar</div>
+              <pre style="margin:0;white-space:pre-wrap;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace;font-size:13px;line-height:1.5;color:#111;">Parabéns, ${before.nome}! 🎉
+
+Sua inscrição foi APROVADA no Big Brother Enseada.
+
+Para acessar o Feed e postar, use:
+Login: ${before.email}
+Senha: ${plainPassword}
+
+Feed: ${feedUrl}
+Para alterar a senha: acesse o Feed (${feedUrl}), faça login e depois vá no menu (dropdown) > Perfil > Alterar senha.
+</pre>
+            </div>
+
+            <div style="margin:14px 0 0 0;font-size:12px;color:#555;">
+              Este e-mail foi enviado para a administração porque o remetente de teste não permite envio direto para todos os participantes.
+            </div>
           </div>
         `,
       });

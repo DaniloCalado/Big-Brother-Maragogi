@@ -16,10 +16,10 @@ export type ConfirmedParticipant = {
 };
 
 const localSlides = [
-  { src: "/enseada-casa-1.jpeg", alt: "Casa — foto 1" },
-  { src: "/enseada-casa-2.jpeg", alt: "Casa — foto 2" },
-  { src: "/enseada-casa-3.jpeg", alt: "Casa — foto 3" },
-  { src: "/enseada-casa-4.jpeg", alt: "Casa — foto 4" },
+  { src: "/a-casa-1.jpeg", alt: "Casa — foto 1" },
+  { src: "/a-casa-2.jpeg", alt: "Casa — foto 2" },
+  { src: "/a-casa-3.jpeg", alt: "Casa — foto 3" },
+  { src: "/a-casa-4.jpeg", alt: "Casa — foto 4" },
 ] as const;
 
 const galleryImages = [
@@ -27,7 +27,7 @@ const galleryImages = [
   { src: "/galeria-2.jpeg", alt: "Galeria — foto 2" },
   { src: "/galeria-3.jpeg", alt: "Galeria — foto 3" },
   { src: "/galeria-4.jpeg", alt: "Galeria — foto 4" },
-  { src: "/galeria-5.jpeg", alt: "Galeria — foto 5" },
+  { src: "/galeria-5b.jpeg", alt: "Galeria — foto 5" },
   { src: "/galeria-6.jpeg", alt: "Galeria — foto 6" },
 ] as const;
 
@@ -247,9 +247,7 @@ export function HomeClient({
               <div className="lg:col-span-7">
                 <div className="mx-auto flex w-fit items-center justify-center gap-2 rounded-full border border-white/15 bg-black/40 px-4 py-2 text-center text-xs font-semibold text-white/90 sm:mx-0 sm:justify-start sm:text-left">
                   <span className="size-2 rounded-full bg-yellow-400" />
-                  <span>
-                    Semana Santa • 2 a 5 de abril • Enseada dos Corais - PE
-                  </span>
+                  <span>2 a 5 de abril • Enseada dos Corais - PE</span>
                 </div>
                 <h1 className="mt-5 text-center text-4xl font-black leading-tight tracking-tight sm:text-left sm:text-6xl">
                   Big Brother Enseada
@@ -359,8 +357,8 @@ export function HomeClient({
 
               <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/5">
                 <Image
-                  src="/maragogi-1.jpeg"
-                  alt="Enseada dos Corais — foto 1"
+                  src="/sobre-o-evento.jpeg"
+                  alt="Sobre o evento"
                   width={1200}
                   height={800}
                   className="h-auto w-full object-cover"
